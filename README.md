@@ -22,4 +22,6 @@ demonstrationImage 설명이미지
 name 상품명
 dk 산소투과성
 reviewCnt 상품평 갯수
+spec 사양 (?)
+graphicDia 그래픽직경
 ```
