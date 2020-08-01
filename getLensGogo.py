@@ -49,21 +49,21 @@ class Lense:
 
 class LenseShelf:
     def __init__(self, browser):
-        self.browser = browser
+        self.driver = browser
         self.lenses = []
 
     def getLenses(self):
-        self.browser.get("https://www.lensgogo.com/product-category/%ec%bd%98%ed%83%9d%ed%8a%b8%eb%a0%8c%ec%a6%88/")
+        self.driver.get("https://www.lensgogo.com/product-category/%ec%bd%98%ed%83%9d%ed%8a%b8%eb%a0%8c%ec%a6%88/")
         sleep(1)
         productPageURL= []
         while True:
             sleep(1)
-            product_tiles = self.browser.find_elements_by_class_name("box-image")
+            product_tiles = self.driver.find_elements_by_class_name("box-image")
             for tile in product_tiles:
                 productPageURL.append(tile.find_element_by_tag_name("a").get_attribute("href"))
                 # break #@For Test
             try:
-                pagination = self.browser.find_element_by_class_name("next")
+                pagination = self.driver.find_element_by_class_name("next")
                 pagination.click()
             except:
                 break
@@ -169,14 +169,8 @@ class LenseShelf:
             bcVal = variation.find_element_by_id("pa_bc").get_attribute("value")
         except:
             return bc
-        try:
-            bc = bcVal.replace("-",".")
-        except:
-            pass
-        try:
-            bc = bcVal.replace("_",".")
-        except:
-            pass
+        bc = bcVal.replace("-",".")
+        bc = bc.replace("_",".")
 
         return bc
 
@@ -186,20 +180,14 @@ class LenseShelf:
             diaVal = variation.find_element_by_id("pa_dia").get_attribute("value")
         except:
             return dia
-        try:
-            dia = diaVal.replace("-",".")
-        except:
-            pass
-        try:
-            dia = diaVal.replace("_",".")
-        except:
-            pass
+        dia = diaVal.replace("-",".")
+        dia = dia.replace("_",".")
         return dia
 
     def getPWR(self, variation):
         pwrs = []
         try:
-            pwrSel = Select(driver.find_element_by_id('pa_pwr'))
+            pwrSel = Select(self.driver.find_element_by_id('pa_pwr'))
             for option in pwrSel.options:
                 pwrs.append(option.text)
             pwrs = pwrs[1:]
@@ -218,7 +206,7 @@ class LenseShelf:
     def getColor(self, variation):
         colors = []
         try:
-            colorSel = Select(driver.find_element_by_id('pa_color'))
+            colorSel = Select(self.driver.find_element_by_id('pa_color'))
             for option in colorSel.options:
                 colors.append(option.text)
             colors = colors[1:]
@@ -236,10 +224,10 @@ class LenseShelf:
             self.lenses.append(lense)
 
     def getLense(self, url):
-        self.browser.get(url)
+        self.driver.get(url)
         sleep(1)
 
-        name = self.browser.find_element_by_class_name("product_title").text
+        name = self.driver.find_element_by_class_name("product_title").text
         name = self.removeUsage(name)
         name = self.removeNofColor(name)
         name = self.removeStr(name,"(토릭)")
@@ -247,18 +235,18 @@ class LenseShelf:
         name, perPackage = self.extractPerPackage(name)
         
         # name = self.trim(name)
-        price = self.browser.find_element_by_class_name("woocommerce-Price-amount").text
+        price = self.driver.find_element_by_class_name("woocommerce-Price-amount").text
         price = self.getPrice(price)
 
-        rating = self.browser.find_element_by_class_name("star-rating")
+        rating = self.driver.find_element_by_class_name("star-rating")
         reviewCnt = self.getReviewCnt(rating)
 
-        images = self.browser.find_elements_by_class_name("skip-lazy")
+        images = self.driver.find_elements_by_class_name("skip-lazy")
         productImage = self.getProductImage(images)
 
-        variation = self.browser.find_element_by_class_name("variations")
+        variation = self.driver.find_element_by_class_name("variations")
 
-        imageWrapper = self.browser.find_element_by_id("tab-description")
+        imageWrapper = self.driver.find_element_by_id("tab-description")
         demonstrationImage = self.getDemonstrationImage(imageWrapper)
 
         bc = self.getBC(variation)
@@ -308,11 +296,11 @@ class LenseShelf:
 
 class HomePage:
     def __init__(self, browser):
-        self.browser = browser
-        self.browser.get('https://www.lensgogo.com/')
+        self.driver = browser
+        self.driver.get('https://www.lensgogo.com/')
 
     def go_to_lense_shelf(self):
-        return LenseShelf(self.browser)
+        return LenseShelf(self.driver)
 
 def initDriver():
     CHROMEDRIVER_PATH = '../chromedriver.exe'
