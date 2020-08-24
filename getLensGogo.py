@@ -48,8 +48,8 @@ class Lense:
         )
 
 class LenseShelf:
-    def __init__(self, browser):
-        self.driver = browser
+    def __init__(self, driver):
+        self.driver = driver
         self.lenses = []
 
     def getLenses(self):
@@ -78,26 +78,25 @@ class LenseShelf:
         targetEnd = targetStart + len(target)
         return source[:targetStart] + source[targetEnd:]
     
-    def removeUsage(self, name):
-        closer = "개월용"
-        idxCloser = name.find(closer)
-        if idxCloser != -1:
-            name = name[0:idxCloser-2] + name[idxCloser+len(closer)+1:len(name)]
-        return name
-
-    def removeNofColor(self, name):
-        closer = "가지색)"
-        idxCloser = name.find(closer)
-        if idxCloser != -1:
-            for i, cand in reversed(list(enumerate(name))):
-                if i >= idxCloser:
-                    continue
-                if cand.isdigit():
-                    continue
-                idxOpener = i
-                break
-            name = name[0:idxOpener] + name[idxCloser+len(closer):len(name)]
-        return name
+    def removeBraket(self, source, target):
+        braketStart = 0
+        braketEnd = 0
+        targetStart = source.find(target)
+        if targetStart == -1:
+            return source
+        for i, cand in reversed(list(enumerate(source))):
+            if i > targetStart:
+                continue
+            if cand == "(":
+                braketStart = i
+        for i, cand in list(enumerate(source)):
+            if i < targetStart:
+                continue
+            if cand == ")":
+                braketEnd = i
+        if braketStart == 0 | braketEnd == 0:
+            return source
+        return source[:braketStart] + source[braketEnd+1:]
 
     def extractPerPackage(self, name):
         perPackage = -1
@@ -117,7 +116,6 @@ class LenseShelf:
                 name = name[0:idxCloser-2] + name[idxCloser+len(closer):len(name)]
             else:
                 name = name[0:idxCloser-3] + name[idxCloser+len(closer):len(name)]
-            return name, perPackage
         if idxCloser == -1:
             idxCloser = name.find("개")
             idxOpener = idxCloser
@@ -228,11 +226,16 @@ class LenseShelf:
         sleep(1)
 
         name = self.driver.find_element_by_class_name("product_title").text
-        name = self.removeUsage(name)
-        name = self.removeNofColor(name)
-        name = self.removeStr(name,"(토릭)")
-        name = self.removeStr(name,"(+ 도수상품)")
         name, perPackage = self.extractPerPackage(name)
+        name = self.removeBraket(name,"가지색")
+        name = self.removeBraket(name,"개월용")
+        name = self.removeBraket(name,"도수")
+        name = self.removeBraket(name,"토릭")
+        name = self.removeBraket(name,"달용")
+        name = self.removeBraket(name,"증정")
+        name = self.removeBraket(name,"착용")
+        name = self.removeBraket(name,"주용")
+        name = self.removeBraket(name,"BC")
         
         # name = self.trim(name)
         price = self.driver.find_element_by_class_name("woocommerce-Price-amount").text
@@ -295,8 +298,8 @@ class LenseShelf:
                 ])
 
 class HomePage:
-    def __init__(self, browser):
-        self.driver = browser
+    def __init__(self, driver):
+        self.driver = driver
         self.driver.get('https://www.lensgogo.com/')
 
     def go_to_lense_shelf(self):
